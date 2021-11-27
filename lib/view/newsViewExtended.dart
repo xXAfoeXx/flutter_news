@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 class MyHomePage extends StatefulWidget {
-  //news = name+id
   MyHomePage({Key? key, required this.news}) : super(key: key);
   final String news;
 

@@ -1,25 +1,33 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
-import 'dart:convert';
+import 'package:flutter/widgets.dart';
+
+import 'news.dart';
 
 class NewsService {
-  final String _baseUrl = "";
+  final Uri _baseUrl = Uri.https("newsapi.org", "/v2/everything");
+  final String _apiKey = "fbff871225eb4408ba6e2d2e7a732b12";
 
-  Future<dynamic> get(String url) async {
+  Future<Request> get(Map<String, dynamic> search, Set<String> urlsFav) async {
     dynamic responseJson;
+    search.addAll({"apiKey": _apiKey, "q": "a"});
+    var url = _baseUrl.replace(queryParameters: search);
+    final response;
     try {
-      final response = await Dio().get(_baseUrl + 'http://www.google.com');
-      responseJson = returnResponse(response);
-    } catch (error) {
-      //il faut tenir compte des autres erreur leve dans returnResponse
-      throw new Exception("No Internet Connection");
+      response = await Dio().get(url.toString());
+    } catch (e) {
+      throw new Exception("no connection internet");
     }
+    responseJson = returnResponse(response, urlsFav);
+    //await Future.delayed(Duration(seconds: 10));
     return responseJson;
   }
 
-  dynamic returnResponse(Response response) {
+  Request returnResponse(Response response, Set<String> urlsFav) {
     switch (response.statusCode) {
       case 200:
-        dynamic responseJson = jsonDecode(response.data);
+        Request responseJson = Request.fromJson(response.data, urlsFav);
         return responseJson;
       case 400:
         throw new Exception(

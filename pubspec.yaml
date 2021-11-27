@@ -27,6 +27,7 @@ dependencies:
   url_launcher: ^6.0.15
   share_plus: ^3.0.4
   dio: ^4.0.4
+  shared_preferences: ^2.0.9
 
 
 
