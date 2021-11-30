@@ -1,89 +1,80 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_news/model/newsService.dart';
 import 'package:flutter_news/view%20model/newsRegistry.dart';
+import 'package:flutter_news/view/newsArticlesTile.dart';
+import 'package:flutter_news/view/newsViewListFav.dart';
+import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
-import 'package:share_plus/share_plus.dart';
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+class NewsList extends StatefulWidget {
+  NewsList({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _NewsListState createState() => _NewsListState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _NewsListState extends State<NewsList> {
+  TextEditingController search = new TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final registry = context.watch<NewsRegistry>();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.favorite),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NewsFavList(),
+              ),
+            ),
+          ),
+        ],
       ),
-      body: Center(
-          child: FutureBuilder(
-        future: registry.isLoading,
-        builder: (context, snapshot) {
-          if (snapshot.hasData)
-            return ListView.builder(
-              itemCount: registry.nbArticles,
-              itemBuilder: (BuildContext context, int index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: InkWell(
-                    onTap: () => {},
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: Stack(children: [
-                              Container(
-                                color: Colors.amber,
-                                child: Center(child: Text("Image")),
-                              ),
-                              Positioned(
-                                right: 0,
-                                child: IconButton(
-                                  icon: Icon(Icons.star_border_outlined),
-                                  onPressed: null,
-                                ),
-                              ),
-                            ]),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 6,
-                          child: ListTile(
-                            minVerticalPadding: 10,
-                            isThreeLine: true,
-                            title:
-                                Text(registry.getArticleFromList(index)!.title),
-                            subtitle: Text(
-                                registry.getArticleFromList(index)!.author),
-                            trailing: IconButton(
-                                onPressed: () {
-                                  Share.share(
-                                      registry.getArticleFromList(index)!.url);
-                                },
-                                icon: Icon(Icons.share)),
-                          ),
-                        ),
-                      ],
+      body: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: search,
+                    decoration: const InputDecoration(
+                      border: UnderlineInputBorder(),
                     ),
                   ),
-                );
-              },
-            );
-          else if (snapshot.hasError)
-            return Text((snapshot.error as Exception).toString());
-          return CircularProgressIndicator();
-        },
-      )),
+                ),
+                TextButton(
+                    onPressed: () {
+                      registry.searchArticle(search.text);
+                    },
+                    child: Text("submit")),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 9,
+            child: !registry.isLoadingFirstBatch
+                ? ListView.builder(
+                    itemCount: registry.nbArticles,
+                    itemBuilder: (BuildContext context, int index) {
+                      return ArticlesWidget(
+                        article: registry.getArticleFromList(index),
+                      );
+                    },
+                  )
+                : registry.error != null
+                    ? Text(registry.error.toString())
+                    : Center(
+                        child: CircularProgressIndicator(),
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }

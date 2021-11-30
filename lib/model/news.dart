@@ -3,26 +3,35 @@ class Request {
   int totalResults;
   List<Article> articles;
 
-  Request.fromJson(Map<String, dynamic> json, Set<String> urls)
+  Request.fromJson(Map<String, dynamic> json)
       : status = json['status'],
         totalResults = json['totalResults'],
         articles = List<Article>.from(json['articles'].map((x) {
-          return Article.fromJson(x, urls.contains(x["url"]));
+          return Article.fromJson(x);
         }));
 }
 
 class Article {
   Source source;
-  String author;
+  String? author;
   String title;
-  String description;
+  String? description;
   String url;
-  String urlToImage;
-  String publishedAt;
-  String content;
-  bool isFav;
+  String? urlToImage;
+  String? publishedAt;
+  String? content;
 
-  Article.fromJson(Map<String, dynamic> json, bool isFav)
+  Article.fromJson(Map<String, dynamic> json)
+      : source = Source.fromJson(json['source']),
+        author = json['author'],
+        title = json['title'],
+        description = json['description'],
+        url = json['url'],
+        urlToImage = json['urlToImage'] == "" ? null : json['urlToImage'],
+        publishedAt = json['publishedAt'],
+        content = json['content'];
+
+  Article.fromFavJson(Map<String, dynamic> json)
       : source = Source.fromJson(json['source']),
         author = json['author'],
         title = json['title'],
@@ -30,11 +39,10 @@ class Article {
         url = json['url'],
         urlToImage = json['urlToImage'],
         publishedAt = json['publishedAt'],
-        content = json['content'],
-        this.isFav = isFav;
+        content = json['content'];
 
   Map<String, dynamic> toJson() => {
-        "source": source.toJson,
+        "source": source.toJson(),
         "author": author,
         "title": title,
         "description": description,
@@ -47,7 +55,7 @@ class Article {
 
 class Source {
   String? id;
-  String name;
+  String? name;
 
   Source.fromJson(Map<String, dynamic> json)
       : id = json['id'],
